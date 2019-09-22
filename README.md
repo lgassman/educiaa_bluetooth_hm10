@@ -1,1 +1,3 @@
 # educiaa_bluetooth_hm10
+
+Un programa alternativo que funciona para la UI de android desarrollada en el ejemplo del [firmware de la EDU-CIAA](https://github.com/epernia/firmware_v3/blob/master/examples/c/sapi/bluetooth/hm10_uart_bridge/EDU-CIAA-NXP%20y%20BLE%204.0%20HM10.pdf). En este programa se tienen en consideración algunas cuestiones de arquitectura de software, com… 
