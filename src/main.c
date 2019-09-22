@@ -36,14 +36,10 @@
 
 /*==================[definiciones y macros]==================================*/
 
-#define UART_PC        UART_USB
-#define UART_BLUETOOTH UART_232
-
 
 #include "Button.h"
 #include "AppModel.h"
 #include "AppModelRender.h"
-#include "UartConnector.h"
 
 /*==================[funcion principal]======================================*/
 
@@ -52,29 +48,6 @@ void buttonPressed(void * appModelPointer) {
 	AppModel * appModel = (AppModel *)appModelPointer;
 	appModel_toggle(appModel);
 }
-
-
-//Este es un handler uartConnecter
-void bluetoothCommandReceived(void * appModelPointer, uint8_t byte) {
-	if(byte == 'h') {
-		appModel_enable((AppModel *)appModelPointer);
-	}
-	else if(byte == 'l') {
-		appModel_disable((AppModel *)appModelPointer);
-	}
-}
-
-//Este es un observer del Modelo
-void modelChanged(void * uartConnectorPointer, AppModel * model) {
-	UartConnector * uartConnector = (UartConnector *) uartConnectorPointer;
-	if(appModel_isEnabled(model)) {
-		uartConnector_send(uartConnector, "LED_ON");
-	}
-	else {
-		uartConnector_send(uartConnector, "LED_OFF");
-	}
-}
-
 
 
 
@@ -95,22 +68,18 @@ int main( void )
    Button button;
    AppModel appModel;
    AppModelRender appModelRender;
-   UartConnector uartConnector;
 
    appModel_init(&appModel, 0);
-   appModel_setObserver(&appModel, (void *)&uartConnector, modelChanged);
 
    button_init(&button, TEC1, (void *)&appModel);
    button_onRelease(&button, buttonPressed);
 
    appModelRender_init(&appModelRender, &appModel, LED1);
-   uartConnector_initBt(&uartConnector, &appModel, bluetoothCommandReceived);
 
    // ---------- REPETIR POR SIEMPRE --------------------------
    while( TRUE ) {
 	   button_update(&button);
 	   appModelRender_update(&appModelRender);
-	   uartConnector_update(&uartConnector);
 	   delay(1);
    }
 
