@@ -32,24 +32,22 @@
  
 /*==================[inlcusiones]============================================*/
 
-#include <sapi.h>        // <= Biblioteca sAPI
+#include "sapi.h"        // <= Biblioteca sAPI
 
 /*==================[definiciones y macros]==================================*/
 
+#define UART_BLUETOOTH UART_232
 
-#include "Button.h"
-#include "AppModel.h"
-#include "AppModelRender.h"
+/*==================[definiciones de datos internos]=========================*/
+
+/*==================[definiciones de datos externos]=========================*/
+
+/*==================[declaraciones de funciones internas]====================*/
+
+/*==================[declaraciones de funciones externas]====================*/
+
 
 /*==================[funcion principal]======================================*/
-
-//Este es un handler del boton
-void buttonPressed(void * appModelPointer) {
-	AppModel * appModel = (AppModel *)appModelPointer;
-	appModel_toggle(appModel);
-}
-
-
 
 // FUNCION PRINCIPAL, PUNTO DE ENTRADA AL PROGRAMA LUEGO DE ENCENDIDO O RESET.
 int main( void )
@@ -60,30 +58,38 @@ int main( void )
    boardConfig();
 
    // Inicializar UART_232 para conectar al modulo bluetooth
-   //uartWriteString( UART_PC, "UART_BLUETOOTH para modulo Bluetooth configurada.\r\n" );
-   //uartConfig( UART_BLUETOOTH, 9600 );
+   uartConfig( UART_BLUETOOTH, 9600 );
    
-   //uint8_t data = 0;
+   uint8_t data = 0;
    
-   Button button;
-   AppModel appModel;
-   AppModelRender appModelRender;
-
-   appModel_init(&appModel, 0);
-
-   button_init(&button, TEC1, (void *)&appModel);
-   button_onRelease(&button, buttonPressed);
-
-   appModelRender_init(&appModelRender, &appModel, LED1);
-
    // ---------- REPETIR POR SIEMPRE --------------------------
    while( TRUE ) {
-	   button_update(&button);
-	   appModelRender_update(&appModelRender);
-	   delay(1);
+
+      if( uartReadByte( UART_BLUETOOTH, &data ) ) {
+         if( data == 'h' ) {
+            gpioWrite( LEDB, ON );
+         }
+         if( data == 'l' ) {
+            gpioWrite( LEDB, OFF );
+         }
+      }
+
+
+      // Si presiono TEC3 enciende el led de la pantalla de la app
+      if( !gpioRead( TEC3 ) ) {
+         uartWriteString( UART_BLUETOOTH, "LED_ON\r\n" );
+         delay(500);
+      }
+      // Si presiono TEC4 apaga el led de la pantalla de la app
+      if( !gpioRead( TEC4 ) ) {
+         uartWriteString( UART_BLUETOOTH, "LED_OFF\r\n" );
+         delay(500);
+      }
    }
 
+   // NO DEBE LLEGAR NUNCA AQUI, debido a que a este programa se ejecuta
+   // directamenteno sobre un microcontroladore y no es llamado por ningun
+   // Sistema Operativo, como en el caso de un programa para PC.
    return 0;
 }
-
 
